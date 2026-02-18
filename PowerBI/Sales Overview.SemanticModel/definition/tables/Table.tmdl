@@ -1,6 +1,10 @@
 table Table
 	lineageTag: 99dfcda8-3c44-4098-9c92-20627b9fad8a
 
+	measure 'New Measure' = 109
+		formatString: 0
+		lineageTag: db744b0d-9138-4f46-a2c7-d53cfc1ec699
+
 	column country
 		dataType: string
 		lineageTag: 108e0874-9293-4255-8603-9e27556b6364
