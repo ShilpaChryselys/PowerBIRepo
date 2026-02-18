@@ -1,0 +1,129 @@
+table Table
+	lineageTag: 99dfcda8-3c44-4098-9c92-20627b9fad8a
+
+	column country
+		dataType: string
+		lineageTag: 108e0874-9293-4255-8603-9e27556b6364
+		summarizeBy: none
+		sourceColumn: country
+
+		annotation SummarizationSetBy = Automatic
+
+	column ' order_value_EUR '
+		dataType: double
+		lineageTag: 8d0302c7-5a40-477f-a593-0d09bcce5987
+		summarizeBy: sum
+		sourceColumn: " order_value_EUR "
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column ' cost '
+		dataType: double
+		lineageTag: 0adc833e-b2c3-43c7-8d8b-ff827255638e
+		summarizeBy: sum
+		sourceColumn: " cost "
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column date
+		dataType: string
+		lineageTag: bb7dcee1-1b69-467e-bad4-58b28d3580c7
+		summarizeBy: none
+		sourceColumn: date
+
+		annotation SummarizationSetBy = Automatic
+
+	column category
+		dataType: string
+		lineageTag: ae54c98a-18c1-45c8-a4e9-751457aa0226
+		summarizeBy: none
+		sourceColumn: category
+
+		annotation SummarizationSetBy = Automatic
+
+	column customer_name
+		dataType: string
+		lineageTag: 428efdde-1c06-4e97-bacc-8f281ea9b849
+		summarizeBy: none
+		sourceColumn: customer_name
+
+		annotation SummarizationSetBy = Automatic
+
+	column sales_manager
+		dataType: string
+		lineageTag: 6b76fc69-87c8-4842-9357-fd54dbe25b18
+		summarizeBy: none
+		sourceColumn: sales_manager
+
+		annotation SummarizationSetBy = Automatic
+
+	column sales_rep
+		dataType: string
+		lineageTag: 73041cb1-5fd4-4a1a-9481-0205a38bd4ae
+		summarizeBy: none
+		sourceColumn: sales_rep
+
+		annotation SummarizationSetBy = Automatic
+
+	column device_type
+		dataType: string
+		lineageTag: c6d7bc01-1fc0-4d84-be2c-ee389ecfe7f8
+		summarizeBy: none
+		sourceColumn: device_type
+
+		annotation SummarizationSetBy = Automatic
+
+	column order_id
+		dataType: string
+		lineageTag: bb0f42d1-ed5a-4836-91b8-35c95c545f2d
+		summarizeBy: none
+		sourceColumn: order_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'New Category' = ```
+			
+			SWITCH(
+			    'Table'[category],
+			    "Accessories", "Category A",
+			    "Appliances", "Category B",
+			    "Beauty", "Category C",
+			    "Books", "Category D",
+			    "Clothing", "Category E",
+			    "Electronics", "Category F",
+			    "Games", "Category G",
+			    "Other", "Category H",
+			    "Outdoors", "Category I",
+			    "Smartphones", "Category J"
+			)
+			
+			```
+		lineageTag: 95c7948e-6f99-4a04-8004-c865de264677
+		summarizeBy: none
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Table = m
+		mode: import
+		source =
+				let
+				    Source = SharePoint.Files("https://chryselys01.sharepoint.com/sites/DFIQICScorecard/", [ApiVersion = 15]),
+				    #"Filtered Rows" = Table.SelectRows(Source, each ([Name] = "Sales_Data_Dummy.csv")),
+				    #"Filtered Hidden Files1" = Table.SelectRows(#"Filtered Rows", each [Attributes]?[Hidden]? <> true),
+				    #"Invoke Custom Function1" = Table.AddColumn(#"Filtered Hidden Files1", "Transform File", each #"Transform File"([Content])),
+				    #"Renamed Columns1" = Table.RenameColumns(#"Invoke Custom Function1", {"Name", "Source.Name"}),
+				    #"Removed Other Columns1" = Table.SelectColumns(#"Renamed Columns1", {"Source.Name", "Transform File"}),
+				    #"Expanded Table Column1" = Table.ExpandTableColumn(#"Removed Other Columns1", "Transform File", Table.ColumnNames(#"Transform File"(#"Sample File"))),
+				    #"Changed Type" = Table.TransformColumnTypes(#"Expanded Table Column1",{{"Source.Name", type text}, {"country", type text}, {" order_value_EUR ", type number}, {" cost ", type number}, {"date", type text}, {"category", type text}, {"customer_name", type text}, {"sales_manager", type text}, {"sales_rep", type text}, {"device_type", type text}, {"order_id", type text}}),
+				    #"Removed Other Columns" = Table.SelectColumns(#"Changed Type",{"country", " order_value_EUR ", " cost ", "date", "category", "customer_name", "sales_manager", "sales_rep", "device_type", "order_id"})
+				in
+				    #"Removed Other Columns"
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+
